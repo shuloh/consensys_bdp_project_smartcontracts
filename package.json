@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "ganache": "ganache-cli",
+    "ganache": "node runGanacheCli.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -17,5 +17,6 @@
     "ganache-cli": "^6.7.0",
     "solc": "^0.5.12",
     "truffle": "^5.0.39"
-  }
+  },
+  "dependencies": {}
 }

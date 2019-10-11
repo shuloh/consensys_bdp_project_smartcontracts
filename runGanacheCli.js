@@ -20,6 +20,6 @@ execSync(
     process.env.NETWORKID
   }`,
   {
-    stdio: [0, 1, 2]
+    stdio: "inherit"
   }
 );

@@ -17,7 +17,11 @@ interface IPrivateCompany {
 
     function decreaseAllowance(address spender, uint256 subtractedValue) external returns (bool);
 
+    function name() external view returns (string memory);
 
+    function symbol() external view returns (string memory);    
+
+    function decimals() external view returns (uint8); 
 
     function owner() external view returns (address);
 
@@ -29,18 +33,7 @@ interface IPrivateCompany {
     //onlyOwner
     function transferOwnership(address newOwner) external;
 
-
-
-    function mint(address account, uint256 amount) external returns (bool);
-    
-
-
-    function paused() external view returns (bool);
-
-    //onlyPauser
-    function pause() external;
-
-    //onlyPauser
-    function unpause() external;
+    //onlyOwner
+    function mint(uint256 amount) external;
 
 }

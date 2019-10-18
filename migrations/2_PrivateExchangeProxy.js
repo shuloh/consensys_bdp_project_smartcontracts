@@ -2,14 +2,15 @@ const PrivateExchangeProxy = artifacts.require("PrivateExchangeProxy");
 const PrivateExchangeLogic = artifacts.require("PrivateExchangeLogic");
 const PrivateCompanyFactory = artifacts.require("PrivateCompanyFactory");
 
-module.exports = async (deployer, network, accounts) => {
-  const proxy = await deployer.deploy(PrivateExchangeProxy, {
-    from: accounts[0]
+module.exports = async function(deployer, network, accounts) {
+  const proxyAdmin = accounts[0];
+  await deployer.deploy(PrivateExchangeProxy, {
+    from: proxyAdmin
   });
-  const logic = await deployer.deploy(PrivateExchangeLogic, {
-    from: accounts[0]
+  await deployer.deploy(PrivateCompanyFactory, {
+    from: proxyAdmin
   });
-  await deployer.deploy(PrivateCompanyFactory, proxy.address, {
-    from: accounts[0]
+  await deployer.deploy(PrivateExchangeLogic, {
+    from: proxyAdmin
   });
 };

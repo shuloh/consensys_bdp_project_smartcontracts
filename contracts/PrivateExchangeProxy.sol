@@ -1,16 +1,16 @@
 pragma solidity 0.5.12;
 import "@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol";
-import "@openzeppelin/contracts/ownership/Ownable.sol";
-
-interface ICompany {
-    function mint(address dest, uint256 shares) external returns (bool);
-}
-
-interface ICompanyFactory {
-    function newCompany(string calldata name, string calldata symbol, uint256 shares) external returns (address);
-}
 
 interface IPrivateExchangeProxy {
+    /**
+    * Contract initializer.
+    * @param _logic address of the initial implementation.
+    * @param _admin Address of the proxy administrator.
+    * @param _data Data to send as msg.data to the implementation to initialize the proxied contract.
+    * It should include the signature and the parameters of the function to be called, as described in
+    * https://solidity.readthedocs.io/en/v0.5.12/abi-spec.html#function-selector-and-argument-encoding.
+    * This parameter is optional, if no data is given the initialization call to proxied contract will be skipped.
+    */
     function initialize(address _logic, address _admin, bytes calldata _data) payable external;
 
     /**

@@ -10,9 +10,7 @@ contract PrivateCompany is ERC20Detailed, ERC20, Ownable {
     ERC20Detailed(name, symbol, 18)
     public { 
         //Ownable by default sets msg.sender(Factory) as owner which we might not want
-        if (intendedOwner != owner()){
-            _transferOwnership(intendedOwner);
-        }
+        _transferOwnership(intendedOwner);
     }
 
     function mint(uint256 value) public onlyOwner{

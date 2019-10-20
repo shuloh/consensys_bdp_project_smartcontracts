@@ -8,18 +8,24 @@
   },
   "scripts": {
     "ganache": "node runGanacheCli.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "truffle test",
+    "coverage": "solidity-coverage"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "dotenv": "^8.1.0",
+    "dotenv": "^8.2.0",
     "ganache-cli": "^6.7.0",
     "solc": "^0.5.12",
-    "truffle": "^5.0.39"
+    "solidity-coverage": "^0.6.7",
+    "truffle": "^5.0.41"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^2.3.0",
     "@openzeppelin/upgrades": "^2.5.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/shuloh/consensys_bdp_project_smartcontracts.git"
   }
 }

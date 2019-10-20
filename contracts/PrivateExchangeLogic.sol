@@ -3,7 +3,6 @@ import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./IPrivateCompany.sol";
-// import "./IPrivateCompanyFactory.sol";
 import "./IPrivateCompanyFactory.sol";
 
 contract PrivateExchangeLogic is Initializable, Ownable {
@@ -27,7 +26,7 @@ contract PrivateExchangeLogic is Initializable, Ownable {
 
     event ShareTransaction(address indexed company, address indexed buyer, address indexed seller, uint256 amount, uint256 price);
 
-    event CompanyPriceChanged(address indexed company, uint256 price);
+    event CompanyPriceUpdated(address indexed company, uint256 price);
 
     //We must set the owner in the initializer func due to the proxy pattern.
     //State in this contract is meaningless through a proxy.
@@ -38,16 +37,12 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         exchangeToken = _makeExchangeToken(name, symbol);
     }
 
-    //this function exists if they are subsequent upgraded versions of this contract, where owner has been set in the storage of proxy
-    function reinitialize(address owner, address companyFactory, string memory name, string memory symbol) public onlyOwner {
-        _transferOwnership(owner);
-        _openMode = false;
+    function upgradeCompanyFactory(address companyFactory) public onlyOwner {
         _companyFactory = IPrivateCompanyFactory(companyFactory);
-        exchangeToken = _makeExchangeToken(name, symbol);
     }
 
     function _makeExchangeToken(string memory name, string memory symbol) internal returns (IPrivateCompany) {
-        return _createCompany(owner(), name, symbol);
+        return _createCompany(address(this), name, symbol);
     }
 
     function numberOfListedCompanies() view public returns(uint256) {
@@ -70,41 +65,56 @@ contract PrivateExchangeLogic is Initializable, Ownable {
     function switchOpenMode(bool value) public onlyOwner {
         _openMode = value;
     }
+
+    function exchangeTokenBalance() public view returns(uint256) {
+        return exchangeToken.balanceOf(msg.sender);
+    }
     
     function buyExchangeToken() public payable onlyOpen {
         exchangeToken.mint(msg.value);
         exchangeToken.transfer(msg.sender, msg.value);
     }
 
-    function buyCompanyShares(uint256 index, uint256 amount) public onlyOpen {
-        IPrivateCompany pc = listedCompanies[index];
-        uint256 price = listedCompanyPrices[address(pc)];
+    function buyCompanyShares(address company, uint256 amount) public onlyOpen {
+        require(_isListedCompany(company), "not a listed company");
+        uint256 price = listedCompanyPrices[company];
         require(price > 0, "company price invalid");
         address buyer = msg.sender;
+        IPrivateCompany pc = IPrivateCompany(company);
         address seller = pc.owner();
         uint256 cost = amount.mul(price);
         // exchangeToken.transferFrom(buyer, seller, )
+        uint256 sharesAvailable = pc.allowance(seller, address(this));
+        require(sharesAvailable >= amount, "seller does not have enough shares to fill transaction");
+        require(exchangeToken.allowance(buyer, address(this)) >= cost, "buyer does not have enough exchange tokens to fill transaction");
         pc.transferFrom(seller, buyer, amount);
         exchangeToken.transferFrom(buyer, seller, cost);
-        emit ShareTransaction(address(pc), buyer, seller, amount, price);
+        emit ShareTransaction(company, buyer, seller, amount, price);
     }
 
-    function setCompanyPrice(address company, uint256 price) public onlyOpen {
+    function updateCompanyPrice(address company, uint256 price) public onlyOpen {
+        uint256 _price = listedCompanyPrices[company];
+        require(_price > 0, "company is not listed");
         IPrivateCompany pc = IPrivateCompany(company);
         require(pc.owner() == msg.sender, "price-setter is not the company owner");
         require(price > 0 , "price is not set as a positive integer");
+        _updateCompanyPrice(company, price);
+    }
+    function _updateCompanyPrice(address company, uint256 price) internal {
         listedCompanyPrices[company] = price;
-        emit CompanyPriceChanged(company, price);
+        emit CompanyPriceUpdated(company, price);
     }
 
-    function createCompanyAndList(string memory name, string memory symbol) public onlyOpen {
+    function createCompanyAndList(string memory name, string memory symbol, uint256 price) public onlyOpen {
         address companyOwner = msg.sender;
         IPrivateCompany c = _createCompany(companyOwner, name, symbol);
         _listCompany(c);
+        _updateCompanyPrice(address(c), price);
     }
 
-    function listCompany(address company) public onlyOwner onlyOpen {
+    function listCompany(address company, uint256 price) public onlyOwner {
         IPrivateCompany pc = IPrivateCompany(company);
+        _updateCompanyPrice(company, price);
         _listCompany(pc);
     }
 
@@ -123,6 +133,9 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         return IPrivateCompany(c); 
     }
 
+    function _isListedCompany(address company) internal view returns(bool) {
+        return listedCompanyPrices[company] > 0;
+    }
     function _listCompany(IPrivateCompany company) internal {
         listedCompanies.push(company);
         ownerCompanies[company.owner()].push(company);
@@ -130,13 +143,14 @@ contract PrivateExchangeLogic is Initializable, Ownable {
     }
 
     function _delistCompany(IPrivateCompany company) internal {
+        listedCompanyPrices[address(company)] = 0;
         for (uint i = 0; i < listedCompanies.length; i++ )
         {
             if (listedCompanies[i] == company)
             {
                 listedCompanies[i] = listedCompanies[listedCompanies.length - 1];
                 listedCompanies.pop();
-                return;
+                break;
             }
         }
         IPrivateCompany[] storage ownedCompanies = ownerCompanies[company.owner()];
@@ -146,7 +160,7 @@ contract PrivateExchangeLogic is Initializable, Ownable {
             {
                 ownedCompanies[i] = ownedCompanies[ownedCompanies.length - 1];
                 ownedCompanies.pop();
-                return;
+                break;
             }
         }
     }

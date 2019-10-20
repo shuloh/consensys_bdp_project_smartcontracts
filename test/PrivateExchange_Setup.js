@@ -10,12 +10,14 @@ contract("Proxy and Logic initializers and authority", async function(
     this.logicAdmin = accounts[1];
     this.normalAccount = accounts[2];
     this.newProxyAdmin = accounts[3];
+    this.newLogicAdmin = accounts[4];
     this.proxy = await PrivateExchangeProxy.deployed();
     this.logic = await PrivateExchangeLogic.deployed();
     this.companyFactory = await PrivateCompanyFactory.deployed();
     this.logicProxied = await PrivateExchangeLogic.at(this.proxy.address);
     this.newLogicUpgrade = await PrivateExchangeLogic.new();
     this.newLogicUpgradeAndCall = await PrivateExchangeLogic.new();
+    this.newCompanyFactory = await PrivateCompanyFactory.deployed();
   });
 
   it("proxy initialized, logic initialized", async function() {
@@ -50,6 +52,7 @@ contract("Proxy and Logic initializers and authority", async function(
     ),
       { from: this.proxyAdmin };
   });
+
   it("proxy admin confirmed", async function() {
     const got = await this.proxy.admin.call({ from: this.proxyAdmin });
     const want = this.proxyAdmin;
@@ -63,6 +66,7 @@ contract("Proxy and Logic initializers and authority", async function(
     const want = this.logicAdmin;
     assert.equal(got, want);
   });
+
   it("right implementation address", async function() {
     const got = await this.proxy.implementation.call({
       from: this.proxyAdmin
@@ -70,6 +74,7 @@ contract("Proxy and Logic initializers and authority", async function(
     const want = this.logic.address;
     assert.equal(got, want);
   });
+
   it("change admin of proxy possible", async function() {
     await this.proxy.changeAdmin(this.newProxyAdmin, {
       from: this.proxyAdmin
@@ -78,6 +83,7 @@ contract("Proxy and Logic initializers and authority", async function(
     const want = this.newProxyAdmin;
     assert.equal(got, want);
   });
+
   it("upgrade of logic proxied contract possible", async function() {
     await this.proxy.upgradeTo(this.newLogicUpgrade.address, {
       from: this.newProxyAdmin
@@ -86,56 +92,32 @@ contract("Proxy and Logic initializers and authority", async function(
       from: this.newProxyAdmin
     });
     const want = this.newLogicUpgrade.address;
-    const got2 = await this.logicProxied.owner.call({
-      from: this.normalAccount
-    });
-    const want2 = this.logicAdmin;
-    assert.equal(got2, want2);
-    await this.logicProxied.reinitialize(
-      this.logicAdmin,
-      this.companyFactory.address,
-      "TESTNAME",
-      "TESTSYM",
-      { from: this.logicAdmin }
-    );
+    assert.equal(got, want);
   });
+
   it("upgrade and call of logic proxied contract possible", async function() {
-    console.log(this.newLogicUpgradeAndCall.address);
     await this.proxy.upgradeToAndCall(
       this.newLogicUpgradeAndCall.address,
       web3.eth.abi.encodeFunctionCall(
         {
-          name: "reinitialize",
+          name: "numberOfListedCompanies",
           type: "function",
-          inputs: [
-            {
-              type: "address",
-              name: "owner"
-            },
-            {
-              type: "address",
-              name: "companyFactory"
-            },
-            {
-              type: "string",
-              name: "exchangeTokenName"
-            },
-            {
-              type: "string",
-              name: "exchangeTokenSymbol"
-            }
-          ]
+          inputs: []
         },
-        [this.logicAdmin, this.companyFactory.address, "ENTANGLEMENT", "ETGMT"]
+        []
       ),
       {
-        from: this.proxyAdmin
+        from: this.newProxyAdmin
       }
     );
-    // const got = await this.proxy.implementation.call({
-    //   from: this.newProxyAdmin
-    // });
-    // const want = this.newLogicUpgradeAndCall.address;
-    // assert.equal(got, want);
+  });
+
+  it("upgrade of companyFactory possible", async function() {
+    await this.logicProxied.upgradeCompanyFactory(
+      this.newCompanyFactory.address,
+      {
+        from: this.logicAdmin
+      }
+    );
   });
 });

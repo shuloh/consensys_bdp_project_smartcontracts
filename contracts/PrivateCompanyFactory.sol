@@ -11,6 +11,7 @@ contract PrivateCompanyFactory is IPrivateCompanyFactory {
     )
     public returns (address) {
         PrivateCompany c = new PrivateCompany(intendedOwner, name, symbol);
+        emit newCompanyCreated(intendedOwner, address(c));
         return address(c);
     }
 }

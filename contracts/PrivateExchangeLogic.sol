@@ -38,6 +38,14 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         exchangeToken = _makeExchangeToken(name, symbol);
     }
 
+    //this function exists if they are subsequent upgraded versions of this contract, where owner has been set in the storage of proxy
+    function reinitialize(address owner, address companyFactory, string memory name, string memory symbol) public onlyOwner {
+        _transferOwnership(owner);
+        _openMode = false;
+        _companyFactory = IPrivateCompanyFactory(companyFactory);
+        exchangeToken = _makeExchangeToken(name, symbol);
+    }
+
     function _makeExchangeToken(string memory name, string memory symbol) internal returns (IPrivateCompany) {
         return _createCompany(owner(), name, symbol);
     }

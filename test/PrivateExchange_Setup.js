@@ -20,39 +20,6 @@ contract("Proxy and Logic initializers and authority", async function(
     this.newCompanyFactory = await PrivateCompanyFactory.deployed();
   });
 
-  it("proxy initialized, logic initialized", async function() {
-    await this.proxy.initialize(
-      this.logic.address,
-      this.proxyAdmin,
-      web3.eth.abi.encodeFunctionCall(
-        {
-          name: "initialize",
-          type: "function",
-          inputs: [
-            {
-              type: "address",
-              name: "owner"
-            },
-            {
-              type: "address",
-              name: "companyFactory"
-            },
-            {
-              type: "string",
-              name: "exchangeTokenName"
-            },
-            {
-              type: "string",
-              name: "exchangeTokenSymbol"
-            }
-          ]
-        },
-        [this.logicAdmin, this.companyFactory.address, "ENTANGLEMENT", "ETGMT"]
-      )
-    ),
-      { from: this.proxyAdmin };
-  });
-
   it("proxy admin confirmed", async function() {
     const got = await this.proxy.admin.call({ from: this.proxyAdmin });
     const want = this.proxyAdmin;

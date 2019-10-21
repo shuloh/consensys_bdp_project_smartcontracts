@@ -14,36 +14,6 @@ contract("Private Exchange Actions", async function(accounts) {
     this.logic = await PrivateExchangeLogic.deployed();
     this.companyFactory = await PrivateCompanyFactory.deployed();
     this.logicProxied = await PrivateExchangeLogic.at(this.proxy.address);
-    //initializer function has been tested below in Setup test
-    await this.proxy.initialize(
-      this.logic.address,
-      this.proxyAdmin,
-      web3.eth.abi.encodeFunctionCall(
-        {
-          name: "initialize",
-          type: "function",
-          inputs: [
-            {
-              type: "address",
-              name: "owner"
-            },
-            {
-              type: "address",
-              name: "companyFactory"
-            },
-            {
-              type: "string",
-              name: "exchangeTokenName"
-            },
-            {
-              type: "string",
-              name: "exchangeTokenSymbol"
-            }
-          ]
-        },
-        [this.logicAdmin, this.companyFactory.address, "ENTANGLEMENT", "ETGMT"]
-      )
-    );
   });
 
   it("exchange initialized with openMode set to false", async function() {

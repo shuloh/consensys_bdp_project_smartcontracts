@@ -41,9 +41,6 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         _companyFactory = IPrivateCompanyFactory(companyFactory);
     }
 
-    function _makeExchangeToken(string memory name, string memory symbol) internal returns (IPrivateCompany) {
-        return _createCompany(address(this), name, symbol);
-    }
 
     function numberOfListedCompanies() view public returns(uint256) {
         return listedCompanies.length;
@@ -120,6 +117,10 @@ contract PrivateExchangeLogic is Initializable, Ownable {
 
     function delistCompany(address company) public onlyOwner {
         _delistCompany(IPrivateCompany(company));
+    }
+
+    function _makeExchangeToken(string memory name, string memory symbol) internal returns (IPrivateCompany) {
+        return _createCompany(address(this), name, symbol);
     }
 
     function _createCompany(

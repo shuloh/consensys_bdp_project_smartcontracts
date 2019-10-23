@@ -80,7 +80,6 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         IPrivateCompany pc = IPrivateCompany(company);
         address seller = pc.owner();
         uint256 cost = amount.mul(price);
-        // exchangeToken.transferFrom(buyer, seller, )
         uint256 sharesAvailable = pc.allowance(seller, address(this));
         require(sharesAvailable >= amount, "seller does not have enough shares to fill transaction");
         require(exchangeToken.allowance(buyer, address(this)) >= cost, "buyer does not have enough exchange tokens to fill transaction");

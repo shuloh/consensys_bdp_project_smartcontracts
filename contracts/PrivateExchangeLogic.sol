@@ -20,6 +20,10 @@ contract PrivateExchangeLogic is Initializable, Ownable {
 
     IPrivateCompanyFactory private _companyFactory;
 
+    event ExchangeClosed();
+
+    event ExchangeOpened();
+
     event CompanyListed(address indexed owner, address indexed company);
 
     event ExchangeTokenPurchased(address indexed account, address amount);
@@ -61,6 +65,12 @@ contract PrivateExchangeLogic is Initializable, Ownable {
 
     function switchOpenMode(bool value) public onlyOwner {
         _openMode = value;
+        if (value){
+            emit ExchangeOpened();
+        }
+        else {
+            emit ExchangeClosed();
+        }
     }
 
     function exchangeTokenBalance() public view returns(uint256) {
@@ -68,6 +78,7 @@ contract PrivateExchangeLogic is Initializable, Ownable {
     }
     
     function buyExchangeToken() public payable onlyOpen {
+        require(msg.value>0, "value needs to be non-zero");
         exchangeToken.mint(msg.value);
         exchangeToken.transfer(msg.sender, msg.value);
     }

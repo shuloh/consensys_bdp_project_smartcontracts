@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./IPrivateCompany.sol";
 import "./IPrivateCompanyFactory.sol";
 
+
 contract PrivateExchangeLogic is Initializable, Ownable {
     using SafeMath for uint256;
 
@@ -83,6 +84,13 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         exchangeToken.transfer(msg.sender, msg.value);
     }
 
+    /**
+    * @dev issue a buy transaction on the exchange. Note amount param!
+    * because we defined price as per ether unit, the amount specified in wei must be converted to ether units 
+    * so we safe divide the final cost by 1 ether unit
+    * @param company address of company that MUST be listed in listedCompanies 
+    * @param amount amount of shares to buy in wei units
+    */
     function buyCompanyShares(address company, uint256 amount) public onlyOpen {
         require(_isListedCompany(company), "not a listed company");
         uint256 price = listedCompanyPrices[company];
@@ -90,7 +98,7 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         address buyer = msg.sender;
         IPrivateCompany pc = IPrivateCompany(company);
         address seller = pc.owner();
-        uint256 cost = amount.mul(price);
+        uint256 cost = amount.mul(price).div(1 ether);
         uint256 sharesAvailable = pc.allowance(seller, address(this));
         require(sharesAvailable >= amount, "seller does not have enough shares to fill transaction");
         require(exchangeToken.allowance(buyer, address(this)) >= cost, "buyer does not have enough exchange tokens to fill transaction");
@@ -99,6 +107,12 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         emit ShareTransaction(company, buyer, seller, amount, price);
     }
 
+    /**
+    * @dev updates the price of a listed company.
+    * @param company address of company that MUST be listed in listedCompanies 
+    * @param price per ONE ETH unit of shares. min = uint256 1. 
+    * OR 0.000000000000000001 EE$ per ONE ETH unit of shares
+    */
     function updateCompanyPrice(address company, uint256 price) public onlyOpen {
         uint256 _price = listedCompanyPrices[company];
         require(_price > 0, "company is not listed");

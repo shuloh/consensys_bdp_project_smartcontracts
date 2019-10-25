@@ -40,9 +40,14 @@ contract("Private Exchange Actions", async function(accounts) {
   it("normal user cannot call createAndListCompany when OpenMode is false", async function() {
     try {
       assert.equal(
-        await this.logicProxied.createCompanyAndList("COMPANY1", "COY1", 1, {
-          from: this.normalSeller
-        }),
+        await this.logicProxied.createCompanyAndList(
+          "COMPANY1",
+          "COY1",
+          web3.utils.toWei("1"),
+          {
+            from: this.normalSeller
+          }
+        ),
         false
       );
     } catch (e) {
@@ -61,9 +66,14 @@ contract("Private Exchange Actions", async function(accounts) {
   });
 
   it("logicAdmin can createCompanyAndList when OpenMode is true", async function() {
-    await this.logicProxied.createCompanyAndList("COMPANY1", "COY1", 1, {
-      from: this.logicAdmin
-    });
+    await this.logicProxied.createCompanyAndList(
+      "COMPANY1",
+      "COY1",
+      web3.utils.toWei("1"),
+      {
+        from: this.logicAdmin
+      }
+    );
   });
 
   it("logicAdmin has 1 company on platform", async function() {
@@ -91,9 +101,14 @@ contract("Private Exchange Actions", async function(accounts) {
 
   it("normalUser can createCompanyAndList", async function() {
     assert(
-      await this.logicProxied.createCompanyAndList("COMPANY2", "COY2", 2, {
-        from: this.normalSeller
-      })
+      await this.logicProxied.createCompanyAndList(
+        "COMPANY2",
+        "COY2",
+        web3.utils.toWei("2"),
+        {
+          from: this.normalSeller
+        }
+      )
     );
   });
 
@@ -126,9 +141,14 @@ contract("Private Exchange Actions", async function(accounts) {
 
   it("normalUser can create more than 1 company on platform", async function() {
     assert(
-      await this.logicProxied.createCompanyAndList("COMPANY3", "COY3", 3, {
-        from: this.normalSeller
-      })
+      await this.logicProxied.createCompanyAndList(
+        "COMPANY3",
+        "COY3",
+        web3.utils.toWei("3"),
+        {
+          from: this.normalSeller
+        }
+      )
     );
     const ownedCompanies = await this.logicProxied.numberOfOwnedCompanies.call({
       from: this.normalSeller
@@ -171,9 +191,9 @@ contract("Private Exchange Actions", async function(accounts) {
       const name = await c.name.call();
       const symbol = await c.symbol.call();
       const sharesListed = await c.allowance.call(owner, this.proxy.address);
-      const price = (await this.logicProxied.listedCompanyPrices.call(a, {
+      const price = await this.logicProxied.listedCompanyPrices.call(a, {
         from: this.normalSeller
-      })).toNumber();
+      });
 
       const wantName = "COMPANY" + (i + 1);
       assert.equal(name, wantName);
@@ -201,8 +221,8 @@ contract("Private Exchange Actions", async function(accounts) {
           : "0";
       assert.equal(sharesListed, wantSharesListed);
 
-      const wantPrice = i == 0 ? 1 : i == 1 ? 2 : i == 2 ? 3 : 0;
-      assert.equal(price, wantPrice);
+      const wantPrice = (i == 0 ? 1 : i == 1 ? 2 : i == 2 ? 3 : 0).toString();
+      assert.equal(price, web3.utils.toWei(wantPrice));
     }
   });
 

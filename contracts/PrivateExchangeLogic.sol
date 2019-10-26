@@ -29,13 +29,24 @@ contract PrivateExchangeLogic is Initializable, Ownable {
 
     event ExchangeTokenPurchased(address indexed account, address amount);
 
-    event ShareTransaction(address indexed company, address indexed buyer, address indexed seller, uint256 amount, uint256 price);
+    event ShareTransaction(
+        address indexed company,
+        address indexed buyer,
+        address indexed seller,
+        uint256 amount,
+        uint256 price
+    );
 
     event CompanyPriceUpdated(address indexed company, uint256 price);
 
     //We must set the owner in the initializer func due to the proxy pattern.
     //State in this contract is meaningless through a proxy.
-    function initialize(address owner, address companyFactory, string memory name, string memory symbol) public initializer {
+    function initialize(
+        address owner,
+        address companyFactory,
+        string memory name,
+        string memory symbol
+    ) public initializer {
         _transferOwnership(owner);
         _openMode = false;
         _companyFactory = IPrivateCompanyFactory(companyFactory);
@@ -78,6 +89,10 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         return exchangeToken.balanceOf(msg.sender);
     }
     
+    /**
+    * @dev buys the exchange token using ether carried in msg.value
+    *  
+    */
     function buyExchangeToken() public payable onlyOpen {
         require(msg.value>0, "value needs to be non-zero");
         exchangeToken.mint(msg.value);
@@ -86,22 +101,26 @@ contract PrivateExchangeLogic is Initializable, Ownable {
 
     /**
     * @dev issue a buy transaction on the exchange. Note amount param!
-    * because we defined price as per ether unit, the amount specified in wei must be converted to ether units 
-    * so we safe divide the final cost by 1 ether unit
+    * because we defined price as per ether unit of shares, 
+    * we must divide the price by 1 ether unit 
+    * when we calculate the cost to the buyer as amount is given in wei
     * @param company address of company that MUST be listed in listedCompanies 
     * @param amount amount of shares to buy in wei units
     */
     function buyCompanyShares(address company, uint256 amount) public onlyOpen {
         require(_isListedCompany(company), "not a listed company");
         uint256 price = listedCompanyPrices[company];
-        require(price > 0, "company price invalid");
         address buyer = msg.sender;
         IPrivateCompany pc = IPrivateCompany(company);
         address seller = pc.owner();
         uint256 cost = amount.mul(price).div(1 ether);
         uint256 sharesAvailable = pc.allowance(seller, address(this));
-        require(sharesAvailable >= amount, "seller does not have enough shares to fill transaction");
-        require(exchangeToken.allowance(buyer, address(this)) >= cost, "buyer does not have enough exchange tokens to fill transaction");
+        require(sharesAvailable >= amount, 
+            "seller does not have enough shares to fill transaction"
+        );
+        require(exchangeToken.allowance(buyer, address(this)) >= cost, 
+            "buyer does not have enough exchange tokens to fill transaction"
+        );
         pc.transferFrom(seller, buyer, amount);
         exchangeToken.transferFrom(buyer, seller, cost);
         emit ShareTransaction(company, buyer, seller, amount, price);
@@ -126,7 +145,14 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         emit CompanyPriceUpdated(company, price);
     }
 
-    function createCompanyAndList(string memory name, string memory symbol, uint256 price) public onlyOpen {
+    function createCompanyAndList(
+        string memory name,
+        string memory symbol,
+        uint256 price
+    ) public onlyOpen {
+        bytes32 emptyString = keccak256(abi.encodePacked(""));
+        require(keccak256(abi.encodePacked(name)) != emptyString, "empty name given");
+        require(keccak256(abi.encodePacked(symbol)) != emptyString, "empty symbol given");
         address companyOwner = msg.sender;
         IPrivateCompany c = _createCompany(companyOwner, name, symbol);
         _listCompany(c);
@@ -143,7 +169,10 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         _delistCompany(IPrivateCompany(company));
     }
 
-    function _makeExchangeToken(string memory name, string memory symbol) internal returns (IPrivateCompany) {
+    function _makeExchangeToken(
+        string memory name,
+        string memory symbol
+    ) internal returns (IPrivateCompany) {
         return _createCompany(address(this), name, symbol);
     }
 

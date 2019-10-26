@@ -99,6 +99,38 @@ contract("Private Exchange Actions", async function(accounts) {
     assert.equal(got, want);
   });
 
+  it("cannot list a company with empty company name or symbol", async function() {
+    try {
+      assert.equal(
+        await this.logicProxied.createCompanyAndList(
+          "",
+          "test-symbol",
+          web3.utils.toWei("2"),
+          {
+            from: this.normalSeller
+          }
+        ),
+        false
+      );
+    } catch (e) {
+      assert(e.toString().includes("empty name given"));
+    }
+    try {
+      assert.equal(
+        await this.logicProxied.createCompanyAndList(
+          "test-name",
+          "",
+          web3.utils.toWei("2"),
+          {
+            from: this.normalSeller
+          }
+        ),
+        false
+      );
+    } catch (e) {
+      assert(e.toString().includes("empty symbol given"));
+    }
+  });
   it("normalUser can createCompanyAndList", async function() {
     assert(
       await this.logicProxied.createCompanyAndList(
@@ -263,13 +295,26 @@ contract("Private Exchange Actions", async function(accounts) {
       value: web3.utils.toWei("10", "ether")
     });
     const got = web3.utils.fromWei(
-      await this.logicProxied.exchangeTokenBalance({
+      await this.logicProxied.exchangeTokenBalance.call({
         from: this.normalBuyer
-      }),
-      "ether"
+      })
     );
     const want = 10;
     assert.equal(got, want);
+  });
+
+  it("can only buy non-zero exchangeTokens", async function() {
+    try {
+      assert.equal(
+        await this.logicProxied.buyExchangeToken({
+          from: this.normalSeller,
+          value: 0
+        }),
+        false
+      );
+    } catch (e) {
+      assert(e.toString().includes("value needs to be non-zero"));
+    }
   });
 
   it("normal buyer can stake exchangeTokens on exchange to buy shares", async function() {
@@ -284,7 +329,6 @@ contract("Private Exchange Actions", async function(accounts) {
   });
 
   it("normal buyer can buy normal seller shares", async function() {
-    //company1 was delisted by logicAdmin previously
     const company2 = await IPrivateCompany.at(
       await this.logicProxied.listedCompanies.call(1, {
         from: this.normalBuyer
@@ -299,18 +343,88 @@ contract("Private Exchange Actions", async function(accounts) {
       }
     );
     const got = web3.utils.fromWei(
-      await this.logicProxied.exchangeTokenBalance({
+      await this.logicProxied.exchangeTokenBalance.call({
         from: this.normalBuyer
-      }),
-      "ether"
+      })
     );
     //COY2 trades at 1 COY2 == 2 ETGMT
     const want = 4;
     assert.equal(got, want);
   });
 
+  it("can only buy listed company shares", async function() {
+    try {
+      const newCompany = await this.companyFactory.newCompany(
+        this.logicAdmin,
+        "unlistedCompany",
+        "unlistedCOY",
+        { from: this.normalSeller }
+      );
+      const newCompanyAddress = newCompany.logs[0].args.company;
+      assert(
+        await this.logicProxied.buyCompanyShares(
+          newCompanyAddress,
+          web3.utils.toWei("1"),
+          {
+            from: this.normalBuyer
+          }
+        ),
+        false
+      );
+    } catch (e) {
+      assert(e.toString().includes("not a listed company"));
+    }
+  });
+
+  it("normal buyer cannot buy more than the listed normal seller shares", async function() {
+    try {
+      const company2 = await IPrivateCompany.at(
+        await this.logicProxied.listedCompanies.call(1, {
+          from: this.normalBuyer
+        })
+      );
+      await this.logicProxied.buyCompanyShares(
+        company2.address,
+        web3.utils.toWei("1000000"),
+        {
+          from: this.normalBuyer
+        }
+      );
+    } catch (e) {
+      assert(
+        e
+          .toString()
+          .includes("seller does not have enough shares to fill transaction")
+      );
+    }
+  });
+
+  it("normal buyer cannot buy with more exchange tokens that he/she has", async function() {
+    try {
+      const company2 = await IPrivateCompany.at(
+        await this.logicProxied.listedCompanies.call(1, {
+          from: this.normalBuyer
+        })
+      );
+      await this.logicProxied.buyCompanyShares(
+        company2.address,
+        web3.utils.toWei("15"),
+        {
+          from: this.normalBuyer
+        }
+      );
+    } catch (e) {
+      assert(
+        e
+          .toString()
+          .includes(
+            "buyer does not have enough exchange tokens to fill transaction"
+          )
+      );
+    }
+  });
+
   it("normal seller can updateCompanyPrice", async function() {
-    //company1 was delisted by logicAdmin previously
     const company2 = await IPrivateCompany.at(
       await this.logicProxied.listedCompanies.call(1, {
         from: this.normalSeller
@@ -320,5 +434,60 @@ contract("Private Exchange Actions", async function(accounts) {
     await this.logicProxied.updateCompanyPrice(company2.address, 1, {
       from: this.normalSeller
     });
+  });
+
+  it("normal seller cannot update unlisted company price", async function() {
+    try {
+      const newCompany = await this.companyFactory.newCompany(
+        this.logicAdmin,
+        "unlistedCompany",
+        "unlistedCOY",
+        { from: this.normalSeller }
+      );
+      const newCompanyAddress = newCompany.logs[0].args.company;
+      await this.logicProxied.updateCompanyPrice(newCompanyAddress, 1, {
+        from: this.normalSeller
+      });
+      assert(false);
+    } catch (e) {
+      assert(e.toString().includes("company is not listed"));
+    }
+  });
+
+  it("normal seller cannot update company price to zero", async function() {
+    try {
+      const company2 = await IPrivateCompany.at(
+        await this.logicProxied.listedCompanies.call(1, {
+          from: this.normalSeller
+        })
+      );
+      await this.logicProxied.updateCompanyPrice(company2.address, 0, {
+        from: this.normalSeller
+      });
+      assert(false);
+    } catch (e) {
+      assert(e.toString().includes("price is not set as a positive integer"));
+    }
+  });
+  it("normal seller cannot update listed company that he does not own", async function() {
+    try {
+      const company1 = await IPrivateCompany.at(
+        await this.logicProxied.listedCompanies.call(0, {
+          from: this.normalSeller
+        })
+      );
+      await this.logicProxied.updateCompanyPrice(company1.address, 1, {
+        from: this.normalSeller
+      });
+      assert(false);
+    } catch (e) {
+      assert(e.toString().includes("price-setter is not the company owner"));
+    }
+  });
+  it("logic admin can close exchange", async function() {
+    await this.logicProxied.switchOpenMode(false, { from: this.logicAdmin });
+    const got = await this.logicProxied.isOpen.call({ from: this.logicAdmin });
+    const want = false;
+    assert.equal(got, want);
   });
 });

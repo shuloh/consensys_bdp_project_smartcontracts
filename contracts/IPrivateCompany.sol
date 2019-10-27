@@ -36,4 +36,7 @@ interface IPrivateCompany {
     //onlyOwner
     function mint(uint256 amount) external;
 
+    //onlyOwner
+    function burn(uint256 amount) external;
+
 }

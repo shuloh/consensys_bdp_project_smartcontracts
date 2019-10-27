@@ -17,4 +17,7 @@ contract PrivateCompany is ERC20Detailed, ERC20, Ownable {
         _mint(msg.sender, value);
     }
 
+    function burn(uint256 value) public onlyOwner{
+        _burn(msg.sender, value);
+    }
 }

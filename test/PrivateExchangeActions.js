@@ -292,7 +292,28 @@ contract("Private Exchange Actions", async function(accounts) {
   it("normal buyer can buy exchangeTokens using ether", async function() {
     await this.logicProxied.buyExchangeToken({
       from: this.normalBuyer,
-      value: web3.utils.toWei("10", "ether")
+      value: web3.utils.toWei("20")
+    });
+    const got = web3.utils.fromWei(
+      await this.logicProxied.exchangeTokenBalance.call({
+        from: this.normalBuyer
+      })
+    );
+    const want = 20;
+    assert.equal(got, want);
+  });
+
+  it("normal buyer can sell exchangeTokens to get ether", async function() {
+    const exchangeToken = await PrivateCompany.at(
+      await this.logicProxied.exchangeToken.call({
+        from: this.normalBuyer
+      })
+    );
+    await exchangeToken.approve(this.proxy.address, web3.utils.toWei("10"), {
+      from: this.normalBuyer
+    });
+    await this.logicProxied.sellExchangeToken(web3.utils.toWei("10"), {
+      from: this.normalBuyer
     });
     const got = web3.utils.fromWei(
       await this.logicProxied.exchangeTokenBalance.call({

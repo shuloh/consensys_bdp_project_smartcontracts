@@ -103,6 +103,11 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         exchangeToken.transfer(msg.sender, msg.value);
     }
 
+    function sellExchangeToken(uint256 value) public payable onlyOpen {
+        exchangeToken.transferFrom(msg.sender, address(this), value);
+        exchangeToken.burn(value);
+        msg.sender.transfer(value);
+    }
     /**
     * @dev issue a buy transaction on the exchange. Note amount param!
     * because we defined price as per ether unit of shares, 

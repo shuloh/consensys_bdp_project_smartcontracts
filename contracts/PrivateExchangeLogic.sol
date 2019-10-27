@@ -85,6 +85,10 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         }
     }
 
+    function exchangeTokenStaked() public view returns(uint256) {
+        return exchangeToken.allowance(msg.sender, address(this));
+    }
+
     function exchangeTokenBalance() public view returns(uint256) {
         return exchangeToken.balanceOf(msg.sender);
     }
@@ -140,6 +144,7 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         require(price > 0 , "price is not set as a positive integer");
         _updateCompanyPrice(company, price);
     }
+
     function _updateCompanyPrice(address company, uint256 price) internal {
         listedCompanyPrices[company] = price;
         emit CompanyPriceUpdated(company, price);

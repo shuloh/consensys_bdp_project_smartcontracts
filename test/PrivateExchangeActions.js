@@ -326,6 +326,11 @@ contract("Private Exchange Actions", async function(accounts) {
     await exchangeToken.approve(this.proxy.address, web3.utils.toWei("10"), {
       from: this.normalBuyer
     });
+    const got = await this.logicProxied.exchangeTokenStaked.call({
+      from: this.normalBuyer
+    });
+    const want = "10";
+    assert.equal(web3.utils.fromWei(got), want);
   });
 
   it("normal buyer can buy normal seller shares", async function() {

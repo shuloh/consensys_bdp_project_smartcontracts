@@ -4,6 +4,9 @@ import "./IPrivateCompanyFactory.sol";
 
 contract PrivateCompanyFactory is IPrivateCompanyFactory {
 
+    /**
+    * @dev see IPrivateCompanyFactory.newCompany
+    */
     function newCompany(
         address intendedOwner,
         string memory name,

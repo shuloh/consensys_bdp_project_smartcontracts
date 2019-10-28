@@ -495,6 +495,7 @@ contract("Private Exchange Actions", async function(accounts) {
       assert(e.toString().includes("price is not set as a positive integer"));
     }
   });
+
   it("normal seller cannot update listed company that he does not own", async function() {
     try {
       const company1 = await IPrivateCompany.at(
@@ -510,6 +511,7 @@ contract("Private Exchange Actions", async function(accounts) {
       assert(e.toString().includes("price-setter is not the company owner"));
     }
   });
+
   it("logic admin can close exchange", async function() {
     await this.logicProxied.switchOpenMode(false, { from: this.logicAdmin });
     const got = await this.logicProxied.isOpen.call({ from: this.logicAdmin });

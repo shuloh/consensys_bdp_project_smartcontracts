@@ -5,11 +5,16 @@ import "@openzeppelin/contracts/ownership/Ownable.sol";
 import "./IPrivateCompany.sol";
 
 contract PrivateCompany is ERC20Detailed, ERC20, Ownable {
+    /**
+    * @dev PrivateCompany implements the ERC20 Libraries. 18 decimals enforced.
+    * @param intendedOwner address of owner, because factory makes this entity,
+    * Ownable by default sets factory as owner, so we have to transfer ownership
+    * @param name of company
+    * @param symbol of company
+    */
     constructor(address intendedOwner, string memory name, string memory symbol)
-    //for simplicity, all company share tokens have 18 decimals (wei)
     ERC20Detailed(name, symbol, 18)
     public { 
-        //Ownable by default sets msg.sender(Factory) as owner which we might not want
         _transferOwnership(intendedOwner);
     }
 

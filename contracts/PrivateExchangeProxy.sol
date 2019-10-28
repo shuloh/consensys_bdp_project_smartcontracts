@@ -1,6 +1,11 @@
 pragma solidity 0.5.12;
 import "@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol";
 
+/**
+* Documentation from OZ Proxy functions to expose them explicitly
+* The comments below are plucked from the individual functions that make up 
+* InitializableAdminUpgradeabilityProxy.sol
+*/
 interface IPrivateExchangeProxy {
     /**
     * Contract initializer.

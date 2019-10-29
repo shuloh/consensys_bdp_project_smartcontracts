@@ -41,7 +41,7 @@ module.exports = {
   //We push the migrated contracts into the front end
   contracts_build_directory: path.join(
     __dirname,
-    "entangle-exchange-client/src/contracts"
+    "entanglement-exchange/src/contracts"
   ),
 
   networks: {

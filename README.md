@@ -1,8 +1,62 @@
+# App Usage (Ropsten testnet)
+
+[Entanglement exchange](https://shuloh.github.io/entanglement-exchange) (EE) is a dApp on the Ethereum Ropsten testnet that allows business-owners to list their company on a decentralized platform and raise capital, and allows private investors to purchase the shares of these companies.
+
+EE uses an internal ERC20-compliant token called EE$ that serves as the currency for which company shares are transacted at.
+At the moment, EE$ is marked as 1-to-1 to the value of Ether.
+
+An investor that wishes to purchase a company's shares needs to convert their ether holdings to EE\$ on the User page of the app before using EE\$ to purchase the various listed company shares on the exchange.
+
+Likewise, a company owner that earns EE$ from the sale of the company's shares needs can sell their EE$ for ether. Alternatively, they can use their EE\$ to conduct a share-buyback of their own company or use them to invest in the shares of other companies.
+
+EE leverages the `allowance` and `transferFrom` functionalities of the ERC20 standard to allow investors to swap their EE$ for a company's shares. In other words, users never actually transfer their company shares or EE$ into the exchange's wallet in order for a share transaction to take place. Instead, they 'stake' their shares and EE$ to an allowance account that allows the exchange to call `transferFrom` both ways from the seller's shares account and buyer's EE$ account.
+
+```
+    function buyCompanyShares(address company, uint256 amount) public onlyOpen {
+        require(_isListedCompany(company), "not a listed company");
+        uint256 price = listedCompanyPrices[company];
+        address buyer = msg.sender;
+        IPrivateCompany pc = IPrivateCompany(company);
+        address seller = pc.owner();
+        uint256 cost = amount.mul(price).div(1 ether);
+        uint256 sharesAvailable = pc.allowance(seller, address(this));
+        require(
+            sharesAvailable >= amount,
+            "seller does not have enough shares to fill transaction"
+        );
+        require(
+            exchangeToken.allowance(buyer, address(this)) >= cost,
+            "buyer does not have enough exchange tokens to fill transaction"
+        );
+        pc.transferFrom(seller, buyer, amount);
+        exchangeToken.transferFrom(buyer, seller, cost);
+        emit ShareTransaction(company, buyer, seller, amount, price);
+    }
+
+```
+
+## Steps to list a company
+
+By clicking on the '+' button on the Home page, a company owner can list their company on the platform. The following inputs need to be provided: name, symbol, and their desired price per share that they wish to sell their shares at.
+
+Next, after the transaction completes and their company card appears on the homepage, they can click the edit icon button on the card to interact with the company.
+The React app only exposes owner functionalities if it detects the user is the owner.
+
+Next, the company owner chooses how much shares they would like to mint. This is reflected in the totalSupply of the shares of the company. They would then be required to specify how much of the minted shares they would like to list on the exchange. The listing increases the shares allowance account of the exchange for the exchange to conduct share transactions with buyers.
+
+## Steps to invest in a company
+
+An investor-based user is required to buy EE$ on the User page with Ether. Once the transaction completes, the user should see an updated EE$ balance on the right top bar of the App. Next, they would have to 'stake' the amount of EE$ on the exchange, which increase the EE$ allowance of the exchange. Once the transaction completes, the updated EE\$ allowance will be reflected also on the right top bar.
+
+After a user has sufficient EE\$ staked on the exchange allowance, the user can then proceed to the Home page and click on the edit icon of any company they would like to invest. This brings up a dialogue in which the user can specify the amount of shares the user would like to purchase on that company.
+
 # Development
 
 This repo contains only the truffle framework and solidity contracts behind the deployed app at <https://shuloh.github.io/entanglement-exchange>.
 
-For the repo for the front-end react app, please use <https://github.com/shuloh/entanglement-exchange>
+For the repo of the front-end react app, please use <https://github.com/shuloh/entanglement-exchange>
+
+To run the full app locally, you are required to clone the git repo of front-end react app into this project's root folder, as outlined below.
 
 ## Local Setup
 
@@ -10,8 +64,11 @@ For the repo for the front-end react app, please use <https://github.com/shuloh/
    `git clone git@github.com:shuloh/entanglement-exchange.git`  
     to create a directory called [entanglement-exchange](/entanglement-exchange) where the front-end app lives.
    > Note that when truffle compiles the contracts, the configuration specified in [truffle-config.js](truffle-config.js)
-   > builds the .json abi files into the front-end app directory via the following code:  
-   > `contracts_build_directory: path.join( \_\_dirname, "entanglement-exchange/src/contracts" ),`
+   > builds the .json abi files into the front-end app directory via the following code:
+   ```
+   contracts_build_directory:
+       path.join( \_\_dirname, "entanglement-exchange/src/contracts" ),
+   ```
 2. In the project root dir, create a [.env](.env) file and set the `MNEMONIC` variable with your desired 12 word seed phrase.
 
    > MNEMONIC={...your 12 words}
@@ -27,15 +84,19 @@ For the repo for the front-end react app, please use <https://github.com/shuloh/
 
 5. Use a web3 provider such as Metamask to interact with the dApp.
 
-   > Note that truffle migration uses accounts[0] from the MNEMONIC phrase set in .env to deploy a proxy contract (upgradeable pattern).
+## Important Note
 
-   > Due to the transparent proxy pattern, accounts[0] cannot interact normally with the exchange contract as it is the administrator of the proxy contract, and all calls/transactions from the proxy administrator do NOT get forwarded via delegatecall to the logic contract implementation. This is to allow the proxy administrator to upgrade the proxy and not be confused with any conflicting forwarded calls to the logic contract.
+The project configuration in truffle migration uses accounts[0] from the `MNEMONIC` phrase set in .env to deploy [PrivateExchangeProxy.sol](contracts/PrivateExchangeProxy.sol) that is the main contract that the App interfaces with. PrivateExchangeProxy adheres to the upgradeable transparent proxy contract pattern from the OpenZeppelin libraries.
 
-   > Therefore, the truffle migration process sets accounts[1] as the logical contract administrator. To interact as an administrator with the exchange, make sure to use accounts[1]. To interact as a normal user with the exchange, make sure to use any account that is not accounts[0] or accounts[1].
+Due to the transparent proxy pattern, accounts[0] is set as the proxy's administrator and CANNOT interact with the logic/implementation/functionalities of the exchange contract. This is because all calls/transactions from the proxy administrator do NOT get forwarded via delegatecall to the logic contract implementation in the transparent proxy pattern. This is to allow the proxy administrator to upgrade the proxy and not be confused with any conflicting forwarded calls to the logic contract that has the same function signature.
+
+The project configuration sets accounts[1] as the logical contract administrator. To interact as the logical administrator of the exchange, make sure to use accounts[1]. To interact as a normal user with the exchange, make sure to use any account that is not accounts[0] or accounts[1].
 
 # Testing
 
 `npm run test` runs `truffle test` under the hood
+
+Tests are written in JavaScript within the Truffle framework located in the [test](/test) directory
 
 ## Coverage
 

@@ -1,7 +1,7 @@
 {
-  "name": "consensys_bdp_project",
+  "name": "entanglement-smartcontracts",
   "version": "1.0.0",
-  "description": "a web3 project for the consensys blockchain developer program",
+  "description": "truffle-based project containing all smart contracts that power the entanglement-exchange app",
   "main": "truffle-config.js",
   "directories": {
     "test": "test"
@@ -12,7 +12,7 @@
     "test": "truffle test",
     "coverage": "solidity-coverage"
   },
-  "author": "",
+  "author": "Jordan Loh Shu Peng",
   "license": "ISC",
   "devDependencies": {
     "@truffle/hdwallet-provider": "^1.0.23",

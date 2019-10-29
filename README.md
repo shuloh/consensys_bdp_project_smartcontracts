@@ -1,6 +1,6 @@
 # App Usage (Ropsten testnet)
 
-[Entanglement exchange](https://shuloh.github.io/entanglement-exchange) (EE) is a dApp on the Ethereum Ropsten testnet that allows business-owners to list their company on a decentralized platform and raise capital, and allows private investors to purchase the shares of these companies.
+[Entanglement Exchange](https://shuloh.github.io/entanglement-exchange) (EE) is a dApp on the Ethereum Ropsten testnet that allows business-owners to list their company on a decentralized platform and raise capital, and allows private investors to purchase the shares of these companies.
 
 EE uses an internal ERC20-compliant token called EE$ that serves as the currency for which company shares are transacted at.
 At the moment, EE$ is marked as 1-to-1 to the value of Ether.
@@ -60,15 +60,20 @@ To run the full app locally, you are required to clone the git repo of front-end
 
 ## Local Setup
 
-1. In the project root dir, install all node dependencies and  
-   `git clone git@github.com:shuloh/entanglement-exchange.git`  
-    to create a directory called [entanglement-exchange](/entanglement-exchange) where the front-end app lives.
+1. In this repo's project root dir, install all node dependencies. Next, we have to place the front-end React app in the same directory as the project root. This can be done via:
+
+   `git clone git@github.com:shuloh/entanglement-exchange.git`
+
+   which will create a directory called `entanglement-exchange` where the front-end app lives.
+
    > Note that when truffle compiles the contracts, the configuration specified in [truffle-config.js](truffle-config.js)
    > builds the .json abi files into the front-end app directory via the following code:
+
    ```
    contracts_build_directory:
        path.join( \_\_dirname, "entanglement-exchange/src/contracts" ),
    ```
+
 2. In the project root dir, create a [.env](.env) file and set the `MNEMONIC` variable with your desired 12 word seed phrase.
 
    > MNEMONIC={...your 12 words}
@@ -79,12 +84,12 @@ To run the full app locally, you are required to clone the git repo of front-end
    `npm run migrate` runs `truffle migrate` under the hood to the local ganache blockchain,
    and builds the json .abi files to the front end directory
 
-4. Enter the [entanglement-exchange](/entanglement-exchange) directory cloned from step 1 and install all node dependencies.
+4. Enter the `entanglement-exchange` directory cloned from step 1 and install all node dependencies. From the directory,
    `npm run start` to start the local development server for the create-react-app
 
 5. Use a web3 provider such as Metamask to interact with the dApp.
 
-## Important Note
+### Important Note
 
 The project configuration in truffle migration uses accounts[0] from the `MNEMONIC` phrase set in .env to deploy [PrivateExchangeProxy.sol](contracts/PrivateExchangeProxy.sol) that is the main contract that the App interfaces with. PrivateExchangeProxy adheres to the upgradeable transparent proxy contract pattern from the OpenZeppelin libraries.
 

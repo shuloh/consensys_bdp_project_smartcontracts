@@ -1,0 +1,4 @@
+PrivateExchangeProxy.sol Ropsten 0x10A3115A55dF39502e6eC85Eb7166233aA3Bd0C3 entangle.eth
+PrivateExchangeLogic.sol Ropsten 0xB3782F57BeF52A70b088AB9d463F69b0c3D737D8 
+PrivateCompanyFactory.sol Ropsten 0x362B88D90dda4Ccd0Ca044ED46d7863d07B01545
+Migrations.sol Ropsten 0x5A919727A6461257D3F15252ae74cd0Dd176E191

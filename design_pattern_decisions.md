@@ -6,7 +6,7 @@ The internal exchange token EE\$ and the various company shares (represented as 
 
 ## Upgradeability
 
-The app uses the transparent proxy pattern by OpenZeppelin to allow future improvements and bug fixes to the exchange. The interface contract of the app is the address of `PrivateExchangeProxy.sol` but the proxy forwards all non-admin calls and transactions to the deployed logic contract at `PrivateExchangeLogic.sol` There is a separation of roles between the proxy administrator that can upgrade the implementaiton of the exchange, and the logical administrator that can call 'owner' functions of the exchange implementation.
+The app uses the [transparent proxy pattern](https://docs.openzeppelin.com/sdk/2.5/pattern.html) by OpenZeppelin to allow future improvements and bug fixes to the exchange. The interface contract of the app is the address of `PrivateExchangeProxy.sol` but the proxy forwards all non-admin calls and transactions to the deployed logic contract at `PrivateExchangeLogic.sol` There is a separation of roles between the proxy administrator that can upgrade the implementaiton of the exchange, and the logical administrator that can call 'owner' functions of the exchange implementation.
 
 The exchange uses an external factory contract to generate new company entites and its initial exchange Token. This external factory serves as boilerplate and is upgradeable via a change in the address of the factory that can only be called by the logical administrator.
 

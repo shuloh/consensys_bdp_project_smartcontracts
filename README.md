@@ -124,7 +124,7 @@ See [avoiding_common_attacks.md](avoiding_common_attacks.md)
 
 ENS Ethereum Name Service. The proxy contract that the App interfaces with lives on Ropsten `entangle.eth`. When the App starts, it resolves `entangle.eth` from the ENS Resolver. This allows a change in the proxy address by going to the ENS to change the address resolution and we would save the trouble modifying the config json files of the front-end app.
 
-OpenZeppelin libraries are heavily used by the smart contracts. Libraries include
+OpenZeppelin libraries are heavily used by the smart contracts. Notable libraries include:
 
 ```
 @openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol
@@ -134,3 +134,9 @@ OpenZeppelin libraries are heavily used by the smart contracts. Libraries includ
 @openzeppelin/contracts/token/ERC20/ERC20.sol;
 @openzeppelin/contracts/token/ERC20/ERC20Detailed.sol;
 ```
+
+## Deployed addresses on Ropsten
+
+[deployed_addresses.txt](deployed_addresses.txt). Note that the state of the contract `PrivateExchangeLogic.sol` deployed is essentially meaningless. This is because we are using `PrivateExchangeProxy.sol` as the interfacing contract that forwards to the logic and functions provided by the logic contract, the data state of the contract actually lives at the address of PrivateExchangeProxy.
+https://docs.openzeppelin.com/sdk/2.5/pattern.html  
+https://blog.openzeppelin.com/the-transparent-proxy-pattern

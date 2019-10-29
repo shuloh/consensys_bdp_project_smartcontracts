@@ -8,6 +8,7 @@
   },
   "scripts": {
     "ganache": "node runGanacheCli.js",
+    "migrate": "truffle migrate",
     "test": "truffle test",
     "coverage": "solidity-coverage"
   },

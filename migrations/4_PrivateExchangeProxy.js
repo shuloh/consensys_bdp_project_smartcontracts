@@ -8,12 +8,6 @@ module.exports = async function(deployer, network, accounts) {
   await deployer.deploy(PrivateExchangeProxy, {
     from: proxyAdmin
   });
-  await deployer.deploy(PrivateCompanyFactory, {
-    from: proxyAdmin
-  });
-  await deployer.deploy(PrivateExchangeLogic, {
-    from: proxyAdmin
-  });
   let proxy = await PrivateExchangeProxy.deployed();
   let logic = await PrivateExchangeLogic.deployed();
   let factory = await PrivateCompanyFactory.deployed();

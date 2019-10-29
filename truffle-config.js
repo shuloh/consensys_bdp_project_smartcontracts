@@ -25,6 +25,8 @@
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 const path = require("path");
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+require("dotenv").config();
 
 module.exports = {
   /**
@@ -36,6 +38,7 @@ module.exports = {
    *
    * $ truffle test --network <network-name>
    */
+  //We push the migrated contracts into the front end
   contracts_build_directory: path.join(
     __dirname,
     "entangle-exchange-client/src/contracts"
@@ -48,6 +51,19 @@ module.exports = {
     // tab if you use this network and you must also set the `host`, `port` and `network_id`
     // options below to some value.
     //
+    ropsten: {
+      provider: () =>
+        new HDWalletProvider(
+          process.env.MNEMONIC,
+          "https://ropsten.infura.io/v3/" + process.env.INFURA_API_KEY,
+          0,
+          10
+        ),
+      network_id: 3,
+      gas: 5500000,
+      gasPrice: 20000000000,
+      confirmations: 2
+    },
     development: {
       host: "127.0.0.1", // Localhost (default: none)
       port: 8545, // Standard Ethereum port (default: none)
@@ -83,16 +99,10 @@ module.exports = {
     // }
   },
 
-  // Set default mocha options here, use special reporters etc.
-  mocha: {
-    // timeout: 100000
-  },
-
   // Configure your compilers
   compilers: {
     solc: {
       version: "0.5.12", // Fetch exact version from solc-bin (default: truffle's version)
-      docker: false, // Use "0.5.1" you've installed locally with docker (default: false)
       settings: {
         // See the solidity docs for advice about optimization and evmVersion
         optimizer: {

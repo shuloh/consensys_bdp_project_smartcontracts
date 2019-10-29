@@ -42,13 +42,10 @@ contract PrivateExchangeLogic is Initializable, Ownable {
     IPrivateCompanyFactory private _companyFactory;
 
     event ExchangeClosed();
-
     event ExchangeOpened();
-
+    event CompanyPriceUpdated(address indexed company, uint256 price);
     event CompanyListed(address indexed owner, address indexed company);
-
     event CompanyDelisted(address indexed owner, address indexed company);
-
     event ExchangeTokenBought(address indexed account, uint256 amount);
     event ExchangeTokenSold(address indexed account, uint256 amount);
 
@@ -59,8 +56,6 @@ contract PrivateExchangeLogic is Initializable, Ownable {
         uint256 amount,
         uint256 price
     );
-
-    event CompanyPriceUpdated(address indexed company, uint256 price);
 
     modifier onlyOpen() {
         require(isOpen(), "not in open mode");

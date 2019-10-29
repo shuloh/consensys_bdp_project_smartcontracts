@@ -39,7 +39,7 @@ For the repo for the front-end react app, please use <https://github.com/shuloh/
 
 ## Coverage
 
-Solidity test coverage results from `npm run coverage`:
+Solidity test coverage results from `npm run coverage` that runs `solidity-coverage`:
 
 | File                       | % Stmts | % Branch | % Funcs | % Lines | Uncovered Lines |
 | -------------------------- | ------- | -------- | ------- | ------- | --------------- |
@@ -50,5 +50,3 @@ Solidity test coverage results from `npm run coverage`:
 | PrivateCompanyFactory.sol  | 100     | 100      | 100     | 100     |                 |
 | PrivateExchangeLogic.sol   | 100     | 100      | 100     | 100     |                 |
 | PrivateExchangeProxy.sol   | 100     | 100      | 100     | 100     |                 |
-
-more details can be found in the dir `/coverage`

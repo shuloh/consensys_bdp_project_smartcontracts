@@ -111,3 +111,26 @@ Solidity test coverage results from `npm run coverage` that runs `solidity-cover
 | PrivateCompanyFactory.sol  | 100     | 100      | 100     | 100     |                 |
 | PrivateExchangeLogic.sol   | 100     | 100      | 100     | 100     |                 |
 | PrivateExchangeProxy.sol   | 100     | 100      | 100     | 100     |                 |
+
+## Design Pattern Decisions
+
+See [design_pattern_decisions](design_pattern_decisions.md)
+
+## Avoiding Common Attacks
+
+See [avoiding_common_attacks.md](avoiding_common_attacks.md)
+
+## Services & Libaries
+
+ENS Ethereum Name Service. The proxy contract that the App interfaces with lives on Ropsten `entangle.eth`. When the App starts, it resolves `entangle.eth` from the ENS Resolver. This allows a change in the proxy address by going to the ENS to change the address resolution and we would save the trouble modifying the config json files of the front-end app.
+
+OpenZeppelin libraries are heavily used by the smart contracts. Libraries include
+
+```
+@openzeppelin/upgrades/contracts/upgradeability/InitializableAdminUpgradeabilityProxy.sol
+@openzeppelin/upgrades/contracts/Initializable.sol;
+@openzeppelin/contracts/ownership/Ownable.sol;
+@openzeppelin/contracts/math/SafeMath.sol;
+@openzeppelin/contracts/token/ERC20/ERC20.sol;
+@openzeppelin/contracts/token/ERC20/ERC20Detailed.sol;
+```

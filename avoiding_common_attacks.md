@@ -9,3 +9,7 @@ To avoid this attack, this project NEVER uses the `approve` function and instead
 ## Reentrancy
 
 To mitigate possible reentrancy attacks, all functions implemented in the smart contracts used by the exchange follows the pattern of modifying internal state before any external contract calls as much as possible. As an example, the buy transaction only makes the `transferFrom` calls to the exchangeToken and company contracts at the last possible execution. Furthermore, functions in the smart contract use heavily the `require` conditional checks as a further precautionary measure at various points along the execution of a function to revert as early as possible when the function call is expected to fail.
+
+## Integer overflow/underflow
+
+Any mathematical operation used by the exchange relies on the `SafeMath.sol` library contract by OpenZeppelin to avoid disastrous effects from any integer overflow or underflow issues even on `uint256` types.

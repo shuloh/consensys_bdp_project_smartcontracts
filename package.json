@@ -15,16 +15,16 @@
   "author": "Jordan Loh Shu Peng",
   "license": "ISC",
   "devDependencies": {
-    "@truffle/hdwallet-provider": "^1.0.23",
+    "@truffle/hdwallet-provider": "^1.2.4",
     "dotenv": "^8.2.0",
-    "ganache-cli": "^6.7.0",
-    "solc": "^0.5.12",
-    "solidity-coverage": "^0.6.7",
-    "truffle": "^5.0.41"
+    "ganache-cli": "^6.12.2",
+    "solc": "^0.8.3",
+    "solidity-coverage": "^0.7.16",
+    "truffle": "^5.2.5"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^2.3.0",
-    "@openzeppelin/upgrades": "^2.5.3"
+    "@openzeppelin/contracts": "^4.0.0",
+    "@openzeppelin/upgrades": "^2.8.0"
   },
   "repository": {
     "type": "git",
